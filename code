@@ -1,0 +1,941 @@
+---
+title: "MTH-245 Final Paper"
+author: "Andrea Parker, Mindy Isaman"
+bibliography: "references.bib"
+csl: "apa.csl"
+execute:
+  message: FALSE
+  warning: FALSE
+  echo: TRUE
+toc: TRUE
+toccolor: red
+urlcolor: purple
+number-sections: TRUE
+highlight-style: arrow
+format: 
+  html: 
+    code-fold: TRUE
+    code-line-numbers: TRUE
+    cap-location: top
+    code-block-border-left: "#582C83"
+    code-block-bg: TRUE
+    anchor-sections: TRUE
+    link-external-icon: TRUE
+    link-external-newwindow: TRUE
+  pdf:
+    documentclass: article
+    toc: TRUE
+    toc-depth: 3
+    toc-title: Contents
+    number-sections: TRUE
+    number-depth: 3
+    include-in-header:
+      - text: |
+          \usepackage{amsmath}
+          \usepackage[dvipsnames]{xcolor}
+          \usepackage[shortlabels]{enumitem}
+          \usepackage{parskip}
+          \usepackage{hyperref}
+          \usepackage{geometry}
+    geometry:
+      - top=0.75in
+      - left=0.75in
+      - bottom=0.75in
+      - right=0.75in
+  docx: default
+editor_options: 
+  chunk_output_type: inline
+---
+
+\newpage
+
+# Abstract
+
+In this study, we utilized a data set of global data obtained from the USAF Climatology Center, encompassing 365 days of meteorological observations in Denver, Colorado. In our analysis we will be considering mean sea level pressure (.1 mb), mean temperature (.1 Fahrenheit), mean visibility (.1 miles), mean dew point (.1 Fahrenheit), mean wind speed (.1 knots), and maximum wind gust (.1 knots) from the data set. All the variables mentioned are being treated as continuous quantitative variables. Our analysis revealed statistically discernible evidence that temperature is predictive of sea level pressure ($t = -8.26$, $p−value < 0.0001$), visibility is predictive of sea level pressure ($t= 2.79$ , $p−value = 0.0056$), dew point is predictive of sea level pressure ($t = 4.42$, $p−value =< 0.0001$), wind speed is predictive of sea level pressure ($t =-4.33$ , $p−value = <0.0001$), and maximum wind gust is predictive of sea level pressure ($t=3.43$ , $p-value= 0.0007$). We found in our first model that about 38.35% of variability of sea level pressure is explained by the model, as described by the R-squared value, which measures the proportion of the variance in the dependent variable that is predictable from the independent variables. About 37.49% of variability of sea level pressure is explained by the first model, as explained by the adjusted R-squared value calculated. We checked the conditions for use of our first model, of which all were met, mitigating the need for transformations. We further refined our model by incorporating interaction terms, which improved the model's performance. The final interaction model, validated through cross-validation techniques, proved to be the most effective in predicting sea level pressure, with higher R-squared and adjusted R-squared values, higher ll, smaller AIC, smaller RMSE and MAE, however, the BIC was slightly higher in comparison to the original model . This study highlights the importance of considering multiple predictors and their interactions in climatology modeling, providing valuable insights for future research and practical applications.
+
+\newpage
+
+# Introduction
+
+## The Data
+
+We found our data set from data.gov in the data catalog. This data set includes global data obtained from the USAF Climatology Center. The online data files begin with 1929 and over 9000 stations’ data are available.
+
+The daily elements included in the dataset from the different stations are: mean temperature (.1 Fahrenheit), mean dew point (.1 Fahrenheit), mean sea level pressure (.1 mb), mean station pressure (.1 mb), mean visibility (.1 miles), mean wind speed (.1 knots), maximum sustained wind speed (.1 knots), maximum wind gust (.1 knots), maximum temperature (.1 Fahrenheit), minimum temperature (.1 Fahrenheit), precipitation amount (.01 inches). snow depth (.1 inches), and indicators for occurrence of: fog, rain or drizzle, snow or ice pellets, hail, thunder, tornado/funnel cloud. The global summary of day data for 18 surface meteorological elements are derived from the synoptic/hourly observations contained in USAF DATSAV3 Surface data and Federal Climate Complex Integrated Surface Hourly (ISH).
+
+Our specific data set includes 365 days of the above-mentioned variables in Denver, Colorado. In our analysis we will be considering mean sea level pressure (.1 mb), mean temperature (.1 Fahrenheit), mean visibility (.1 miles), mean dew point (.1 Fahrenheit), mean wind speed (.1 knots), and maximum wind gust (.1 knots) from the data set. All these variables are being treated as continuous quantitative variables. In addition to these, we added a new column to the data set indicating the season in which the observations were made, either winter, spring, summer, or fall based on the year 2018 and the region of Denver, Colorado. This new column was used when creating our scatter plot matrix as seen in @fig-4.
+
+## Background
+
+Weather data are checked for consistency across a region. Scientists check data sets from comparable stations to see if the data makes sense for the region and time of year. If they find inconsistencies, meteorologists methodically track down the source of the inconsistent data. At this point, original data values may be flagged as incorrect, and excluded from further processing, but they are never changed or edited, unless the error was due to incorrect transcriptions by volunteers.
+
+Weather instruments are crucial for accurate data collection, weather forecasting and prediction, climate monitoring and research, risk management and disaster response, and environmental monitoring and resource management. This includes air quality, pollution levels, drought conditions, and water resources. Weather instruments provide precise measurements of temperature, humidity, air pressure, wind speed and direction, precipitation, and other meteorological parameters, essential for analyzing current weather conditions, detecting trends, and identifying patterns that can help predict future weather events, such as hurricanes, tornadoes, floods, and heatwaves. The data collected by these instruments are used to develop forecasts and predict weather patterns, including short-term weather events like thunderstorms and hurricanes, as well as long-term climate trends. This information helps policymakers, environmental agencies, and resource managers make informed decisions about environmental protection, conservation, and sustainable development. Also, weather instruments play a vital role in monitoring climate change and its impact on global weather patterns, ecosystems, human societies, and formulating strategies for adaptation and mitigation [@weatherstack].
+
+The most common processing steps used to turn daily weather data into climate data products involve straightforward mathematics. Operations such as adding and averaging turn weather data into climate information. To understand climate on larger scales, climatologists’ average data from individual stations with data from other stations in the area. When combining observations, the values for each station are mathematically weighted to account for the fraction of the averaging area they represent. This keeps areas with many weather stations from being over-represented compared to areas with fewer stations.
+
+Next is quality control, where observers verify the quality and correctness of the records immediately following their observations. For additional quality checks, observers transmit their raw data to NOAA’s National Center for Environmental Information (NCEI) on a daily or monthly basis. At NCEI, meteorologists run a basic check on all incoming data using computers to look for problems such as change points, flatliners, outliers, and excessive ranges. Once weather data has passed quality control, it becomes part of the larger data record. The data can then be processed to generate climate products, such as maps, reports, and graphs, to serve as input for computer models to help generate future climate outlooks and weather forecasts. Over time, records of weather observations help us understand the long-term conditions at each location. Climate scientists quantify long-term average conditions for each date of the year by calculating the average of observed temperature, precipitation, humidity, and others. At the beginning of every new decade, NOAA scientists calculate oﬀicial Climate Normal for the previous three decades [@climate]. These average values are the “normal” against which we compare our daily weather. Climate Normal help us answer the question: “How does today’s weather compare to average conditions over the previous three decades?”
+
+Accurate weather forecasts are critical for public safety, emergency preparedness, agriculture, aviation, marine navigation, transportation, daily activities, scientific research, and a wide range of other applications. Pilots use weather forecasts and real-time data to plan flight routes, avoid turbulence, and make decisions about takeoff and landing. Similarly, shipping companies, railway operators, and trucking companies rely on weather information to plan routes, avoid hazardous conditions, and minimize disruptions to logistics networks. Timely and accurate weather information enables governments, emergency agencies, and communities to take proactive measures to protect lives, property, and infrastructure. Timely and accurate weather information enables authorities to issue warnings, evacuate vulnerable areas, and mobilize resources for disaster relief efforts. Renewable energy sources such as wind and solar power are highly dependent on weather conditions, with windspeed, solar radiation, and temperature affecting energy generation. Utilities use weather forecasts to anticipate demand fluctuations, optimize energy production, and manage the distribution grid effectively. Weather data recording supports a wide range of scientific research endeavors, from studying atmospheric dynamics and climate modeling to investigating the impact of weather on ecosystems and biodiversity[@weathergeeks].
+
+## The "Why"
+
+This data set is of interest to my partner and I because it offers a comprehensive view of historical weather patterns in Denver, Colorado, for the year 2018. This data allows us to explore various aspects of climatology and its real-world implications. By analyzing this information, we aim to understand how weather trends impact urban planning, agriculture, and public health in our region. Additionally, we are keen to investigate the effects of climate change on local weather patterns and contribute to broader environmental research. This project not only enhances our analytic skills but also provides valuable insights that can benefit our community and inform future policy decisions.
+
+Working with data of this nature presents several challenges and limitations. The temporal and spatial resolution of the data, such as daily versus hourly measurements, might limit the depth of our analysis, and focusing on a specific location like Denver may not capture broader regional trends. External factors, such as urban development or natural events, might not be accounted for in the weather data alone, necessitating the integration of additional data sources, which can be challenging. Finally, translating our data analysis into actionable insights requires careful interpretation to avoid incorrect conclusions and recommendations. In our analysis, we are attempting to answer the following questions: Does one factor correlate with sea level pressure more than another? How does sea level pressure compare to our predictor variables?
+
+\newpage
+
+# Exploratory Data Analysis
+
+## Getting to Know the Data
+
+We used the data from the USAF Climatology Center and added about the data was that we added the seasons column to group the days better.
+
+The following is the code we ran to display the data. "Names" presents the nomenclature of all the 18 weather variables in the original data set plus the season column we created.
+
+```{r}
+library(tidyverse)
+library(patchwork)
+library(xtable)
+library(GGally)
+library(binom)
+library(ggplot2)
+library(lubridate)
+library(qqplotr)
+library(rms)
+library(dplyr)
+library(car)
+library(MASS)
+library(Stat2Data)
+library(caret)
+library(knitr)
+library(rmarkdown)
+
+
+gsod.data<-read.csv("GSOD.data.csv")
+names(gsod.data)
+
+gsod.data.clean<-gsod.data%>%dplyr::select(SLP, TEMP, VISIB, DEWP, WDSP, GUST, season)
+
+gsod.data.clean %>% head()
+gsod.data.clean %>% tail()
+gsod.data.clean %>% glimpse()
+gsod.data.clean<-gsod.data.clean %>% mutate (season = as.factor(season))
+gsod.data.clean %>%  glimpse()
+```
+
+### Adding "Season" as a Predictor
+
+We were able to add the column "season" to the data by looking up what day falls in what season. We did this to explore the different weather factors in different seasons. If we were to use season as a factor, we wanted to see how many days are in each season to see how skewed the data could be. With how close the numbers are the graph would be approximately normal.
+
+```{r}
+stats<- table(gsod.data.clean$season)
+```
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cc}
+  \hline\hline
+ & Number of Days \\ 
+  \hline
+Fall &  89 \\ 
+  Spring &  93 \\ 
+  Summer &  94 \\ 
+  Winter &  89 \\ 
+   \hline\hline
+\end{tabular}
+\caption{Number of Days in each season in the year 2018}
+\end{table}
+
+## Histogram of the Response
+
+```{r, echo=FALSE}
+fig.1<-ggplot(gsod.data.clean, aes(x = SLP)) +
+  geom_histogram(binwidth = 1, fill = "lightblue", color = "black") +
+  labs(title = "Histogram of Sea Level Pressure", x = "Sea Level Pressure", y = "Frequency") +
+  theme_classic()
+```
+
+```{r}
+#| fig-width: 4
+#| fig-height: 3
+#| fig-cap: A histogram of Sea Level Pressure (SLP) Variable
+#| label: fig-1
+fig.1
+```
+
+From @fig-1, it becomes evident that the response variable, sea level pressure, is approximately normally distributed.
+
+## Histograms of the Predictors
+
+```{r, echo=FALSE}
+fig.2<-ggplot(gsod.data.clean, aes(x = TEMP)) +
+  geom_histogram(binwidth = 1, fill = "lightblue", color = "black") +
+  labs(title = "Histogram of Temperature", x = "Temperature", y = "Frequency") +
+  theme_classic()
+```
+
+```{r, echo=FALSE}
+fig.3<-ggplot(gsod.data.clean, aes(x = VISIB)) +
+  geom_histogram(binwidth = 1, fill = "lightblue", color = "black") +
+  labs(title = "Histogram of Visibility", x = "Visibility", y = "Frequency") +
+  theme_classic()
+```
+
+```{r, echo=FALSE}
+fig.4<-ggplot(gsod.data.clean, aes(x = DEWP)) +
+  geom_histogram(binwidth = 1, fill = "lightblue", color = "black") +
+  labs(title = "Histogram of Dew Point", x = "Dew Point", y = "Frequency") +
+  theme_classic()
+```
+
+```{r, echo=FALSE}
+fig.5<-ggplot(gsod.data.clean, aes(x = WDSP)) +
+  geom_histogram(binwidth = 1, fill = "lightblue", color = "black") +
+  labs(title = "Histogram of Winds Speed", x = "Wind Speed", y = "Frequency") +
+  theme_classic()
+```
+
+```{r, echo=FALSE}
+fig.6<-ggplot(gsod.data.clean, aes(x = GUST)) +
+  geom_histogram(binwidth = 1, fill = "lightblue", color = "black") +
+  labs(title = "Histogram of Maximum Wind Gust", x = "Maximum Wind Gust", y = "Frequency") +
+  xlim(0, 75) +  # Set the x-axis range from 0 to 200
+  theme_classic()
+```
+
+```{r}
+#| fig-width: 12
+#| fig-height: 6
+#| fig-cap: "Histograms of continuous quantitative variables: temperature, visibility, dew point, wind speed, and maximum wind gust."
+#| label: fig-2
+(fig.2+fig.3+fig.4)/(fig.5+fig.6)
+
+```
+
+Temperature, dew point, wind speed, and maximum wind gust appear to be approximately normally distributed, however visibility is heavily left skewed, as seen in @fig-2.
+
+## Scatter Plot Matrix
+
+Next, we created a scatter plot matrix of all the variables in the dataset.
+
+```{r}
+cor(gsod.data.clean[,1:6])
+
+```
+
+```{r}
+table.1<-ggpairs(gsod.data.clean, columns = c(1:6), ggplot2::aes(colour=season))
+```
+
+```{r, echo=FALSE}
+#| fig-width: 8
+#| fig-height: 6
+#| fig-cap: "A correlogram comparing the relationships between six quantitative variables from the gsod data set broken down by season"
+#| label: fig-4
+table.1
+```
+
+All of the predictors have a negative, linear relationship to sea level pressure, except for maximum wind gust which has a positive relationship to sea level pressure. The strongest association is between sea level pressure and temperature. The weakest association is between visibility and sea level pressure, as seen in @fig-4.
+
+A closer look at the highest and lowest correlated predictors to sea level pressure:
+
+```{r, echo=FALSE}
+figa<-ggplot(gsod.data.clean, aes(x = TEMP, y=SLP)) +
+  geom_point(size = 3, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  labs(title = "Relationship between Temperature and Sea Level Pressure", 
+       x = "Temperature", 
+       y = "Sea Level Pressure") +
+  theme_classic()
+```
+
+```{r, echo=FALSE}
+figb<-ggplot(gsod.data.clean, aes(x = VISIB, y = SLP)) +
+  geom_point(size = 3, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  labs(title = "Relationship between Visibility and Sea Level Pressure", 
+       x = "Visibility", 
+       y = "Sea Level Pressure") +
+  theme_classic()
+```
+
+```{r}
+#| fig-width: 12
+#| fig-height: 3
+#| fig-cap:  A closer look at the realtionships between temperature and sea level pressure (left graph) and between visibility and sea level pressure (right graph). 
+#| label: fig-a 
+figa+figb
+```
+
+With Temperature looking the most approximately normal and having a greater linear relationship, we can see that in the figure above as the dots follow a negative, linear relationship. With Visibility having the weakest correlation and being a left skew graph, we can see that in the figure above as most of the points are on the right side of the graph. \newpage
+
+# Methods
+
+To start, we created our first order linear model as a baseline for comparison to other future models. After running a ANOVA test, we then assess the assumptions of normality, summarize the model before continuing to build upon our first order linear model.,
+
+## Full First Order Model
+
+```{r}
+model.1<-lm(SLP~TEMP+VISIB+DEWP+WDSP+GUST, data=gsod.data.clean)
+summary(model.1)
+```
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{ccccc}
+  \hline\hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+(Intercept) & 1020.7689 & 2.5833 & 395.15 & <0.001 \\ 
+  TEMP & -0.2758 & 0.0334 & -8.26 & <0.001 \\ 
+  VISIB & 0.6891 & 0.2473 & 2.79 & 0.0056 \\ 
+  DEWP & 0.1679 & 0.0380 & 4.42 & <0.001 \\ 
+  WDSP & -0.5637 & 0.1302 & -4.33 & <0.001 \\ 
+  GUST & 0.0028 & 0.0008 & 3.43 & 0.0007 \\ 
+   \hline\hline
+\end{tabular}
+\caption{Summary Statistics of Model 1}
+\end{table}
+
+\newpage
+
+The fitted model is
+
+$\widehat Y = 1020.77 - 0.28(TEMP) + 0.69(VISIB) + 0.17(DEWP) -0.56(WDSP) - 0.0028(GUST)$.
+
+Conclusion: There is statistically discernible evidence that temperature is predictive of sea level pressure ($t = -8.26$, $p−value < 0.0001$). There is statistically discernible evidence that visibility is predictive of (associated with) sea level pressure ($t= 2.79$ , $p−value = 0.0056$). There is statistically discernible evidence that dew point is predictive of sea level pressure ($t = 4.42$, $p−value =< 0.0001$). There is statistically discernible evidence that wind speed is predictive of sea level pressure ($t =-4.33$ , $p−value = <0.0001$). There is also statistically discernible evidence that maximum wind gust is predictive of sea level pressure ($t=3.43$ , $p-value= 0.0007$).
+
+```{r}
+summary(model.1)$r.squared
+```
+
+About 38.36% of variability of sea level pressure is explained by the model. R-squared measures the proportion of the variance in the dependent variable that is predictable from the independent variables. R-squared can be misleading because it always increases as more predictors are added to the model, even if the predictors do not improve the model significantly. One way to mitigate this issue is by calculating an adjusted R-squared value.
+
+```{r}
+summary(model.1)$adj.r.squared
+
+```
+
+About 37.50% of variability of sea level pressure is explained by the model. Adjusted R-Squared adjusts R-squared for the number of predictors in the model, providing a more accurate measurement of the goodness of fit, especially for models with multiple predictors. Adjusted R-squared penalizes the addition of non-significant predictors, providing a more balanced measure of model performance.
+
+To use a multiple linear regression model effectively, several conditions should be met. First, there should be a linear relationship between the dependent variable and each of the independent variables, as seen in scatterplots or correlation coefficients. The residuals (also termed errors) of the model should be approximately normally distributed, which can be verified with a Q-Q plot. Also, the variance of the residuals should be constant across all levels of the independent variables, is essential and can be assessed with a plot of residuals versus fitted values. There should be no or little multicollinearity among the independent variables, which can be checked using a Variance Inflation Factor (VIF) values. The response variable must be continuous quantitative. Finally, the observations should be independent of each other, meaning the residuals should not be correlated and the sample should be representative. Meeting these conditions ensures that the multiple linear regression model provides reliable and valid results.
+
+## Anova
+
+Before we begin by testing the assumptions for our first order model, we ran an ANOVA for regression to determine which variables were significant or not.
+
+$H_0: \beta_1 = \beta_2 = \beta_3 = \beta_4 = \beta_5 = 0$
+
+$H_a:$ at least one $\beta_j =$ 1, 2, 3, 4, 5, is not 0
+
+```{r}
+stats2<-anova(ols(SLP~TEMP+ VISIB+ DEWP+ WDSP+ GUST, data=gsod.data.clean))
+```
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cccccc}
+  \hline\hline
+ & d.f. & Partial SS & MS & F & P \\ 
+  \hline
+TEMP & 1.00 & 2156.64 & 2156.64 & 68.15 & <0.0001 \\ 
+  VISIB & 1.00 & 245.64 & 245.64 & 7.76 & 0.0056 \\ 
+  DEWP & 1.00 & 618.11 & 618.11 & 19.53 & <0.0001 \\ 
+  WDSP & 1.00 & 593.12 & 593.12 & 18.74 & <0.0001 \\ 
+  GUST & 1.00 & 372.11 & 372.11 & 11.76 & 0.0007 \\ 
+  TOTAL & 5.00 & 7068.22 & 1413.64 & 44.67 & <0.0001 \\ 
+  ERROR & 359.00 & 11359.97 & 31.64 &  &  \\ 
+   \hline\hline
+\end{tabular}
+\caption{Mean temperature, mean visibility, mean dew point, mean wind speed, and maximum wind gust are important in describing the mean sea level pressure.}
+\end{table}
+
+Conclusion: There is statistically discernible evidence that as least one of the five predictor variables is important in describing the mean sea level pressure values ( f=44.67, $p$-value \< 0.0001). Also, all the variables are statistically discernible, so none of them equal each other.
+
+## Testing Conditions of Use
+
+```{r}
+predictions.data <- predict(model.1)
+residuals.data <- residuals(model.1)
+residual.data <- data.frame(gsod.data.clean,
+predictions = predictions.data,
+residuals = residuals.data)
+
+residual.data %>% head()
+```
+
+```{r}
+source("https://cipolli.com/students/code/plotResiduals.R")
+```
+
+```{r}
+graph.1 <- plotResiduals(model.1)
+```
+
+```{r}
+#| fig-width: 7
+#| fig-height: 5
+#| fig-cap: "Figure of diagnostic plots for the linear model where Y is sea level pressure and the predictors are daily temperature, visibility, dew point, wind speed, and maximum wind gust."
+#| label: fig-5
+graph.1
+```
+
+Conclusion for Condition for Use: Sea level pressure is continuous quantitative variable. This data is most likely representative of daily weather data in Denver during 2018. The data is independent because the weather of one day likely does not impact the weather of the next. Based on the figure above the residuals seem to have a constant $\sigma^2$. The residuals are approximately normally distributed with a mean of zero, satisfying the assumption of normality. Furthermore, the predictor variables exhibit low multicollinearity, as evidenced by the dispersion of residuals, indicating that the predictors are not highly correlated. These conditions validate the use of the linear regression model data set.
+
+```{r}
+vif(model.1)
+```
+
+Multicollinearity: For the most part, there is no correlation for visibility, wind speed, and snow depth. However, temperature and dew point have moderate correlation between a given predictor variable and other predictor variables in the model, but this is often not severe enough to require attention, being valued at less than 5.
+
+After assessing the assumptions, there appears to be no clear violations of the conditions for use, therefore we will continue with model selection without the need for transformations.
+
+## Model Selection: First Order Model
+
+### Backward Elimination and AIC
+
+```{r}
+bAIC <- stepAIC(model.1,direction ="backward",trace =FALSE)
+summary(bAIC)
+```
+
+### Backward Elimination and BIC
+
+```{r}
+bBIC <- stepAIC(model.1,direction="backward",k=log(nrow(gsod.data.clean)),trace=FALSE)
+summary(bBIC)
+```
+
+### Forward Selection and AIC
+
+```{r}
+intercept<-lm(SLP~1,data=gsod.data.clean)
+```
+
+```{r}
+fAIC <- stepAIC(intercept,direction ="forward",scope =list(upper =model.1),trace =FALSE)
+summary(fAIC)
+```
+
+### Forward Selection and BIC
+
+```{r}
+fBIC <- stepAIC(intercept,direction ="forward",scope =list(upper =model.1),k=log(nrow(gsod.data.clean)),trace =FALSE)
+summary(fBIC)
+```
+
+### Stepwise Selection and AIC
+
+```{r}
+sAIC <- stepAIC(intercept,direction ="both",scope =list(upper =model.1),trace =FALSE)
+summary(sAIC)
+```
+
+### Stepwise Selection and BIC
+
+```{r}
+sBIC <- stepAIC(intercept,direction ="both",scope =list(upper =model.1),k=log(nrow(gsod.data.clean)),trace =FALSE)
+summary(sBIC)
+```
+
+## Final Model: First Oder Model
+
+The table below shows the adjusted r squared for model selection process. As you can tell, all of them have the same adjusted of 0.375, which is higher than the original model. Also, all the models show all 5 predictors as being significant. For our case, lets say the step function is the best function as it interactively add and remove variables based on statistical significance. Lets also use the AIC test as it identifies important predictors by effectively balancing model fit and complexity.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cc}
+  \hline\hline
+ & Adjusted R Squared \\ 
+  \hline
+Backwards AIC & 0.375 \\ 
+Backwards BIC & 0.375 \\
+Forwards AIC & 0.375 \\ 
+Forwards BIC & 0.375\\ 
+Step AIC & 0.375 \\ 
+Step BIC &  0.375  \\ 
+Original & 0.374969\\
+   \hline\hline
+\end{tabular}
+\caption{Adjusted R Squared For Model Selection of the First Order Model}
+\end{table}
+
+## Full 2-Way Interaction Model
+
+Now that we have created our baseline model and assessed the assumptions for use, we explore interaction terms and examine their effect on the model. Model selection techniques were utilized to choose which interaction terms should be included and used for cross validation later on.
+
+```{r}
+interaction.model <-lm(SLP~(TEMP+ VISIB+ DEWP+ WDSP+ GUST)^2, data=gsod.data.clean)
+
+Anova(interaction.model, type=3)
+```
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cccccc}
+  \hline\hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) & Significance \\ 
+  \hline
+(Intercept) & 1027.9882 & 11.2878 & 91.07 & <0.001 & Significant \\ 
+  TEMP & -0.0680 & 0.4698 & -0.14 & 0.8851 & Not Significant  \\ 
+  VISIB & 0.5459 & 1.2821 & 0.43 & 0.6705 & Not Significant  \\ 
+  DEWP & -0.3304 & 0.4864 & -0.68 & 0.4974 & Not Significant \\ 
+  WDSP & -1.7389 & 1.0127 & -1.72 & 0.0868 & Not Significant\\ 
+  GUST & 0.0067 & 0.0061 & 1.10 & 0.2735 & Not Significant \\ 
+  TEMP:VISIB & -0.0245 & 0.0437 & -0.56 & 0.5761 & Not Significant \\ 
+  TEMP:DEWP & 0.0071 & 0.0016 & 4.59 & <0.001 & Significant  \\ 
+  TEMP:WDSP & -0.0153 & 0.0139 & -1.10 & 0.2737 & Not Significant \\ 
+  TEMP:GUST & -0.0001 & 0.0001 & -0.80 & 0.4217 & Not Significant \\ 
+  VISIB:DEWP & -0.0113 & 0.0459 & -0.25 & 0.8049 & Not Significant \\ 
+  VISIB:WDSP & 0.1530 & 0.1129 & 1.36 & 0.1760 & Not Significant\\ 
+  VISIB:GUST & -0.0001 & 0.0006 & -0.25 & 0.7995 & Not Significant\\ 
+  DEWP:WDSP & 0.0218 & 0.0148 & 1.47 & 0.1419 & Not Significant \\ 
+  DEWP:GUST & 0.0000 & 0.0001 & 0.14 & 0.8916 & Not Significant \\ 
+  WDSP:GUST & -0.0000 & 0.0004 & -0.04 & 0.9664 & Not Significant \\ 
+   \hline\hline
+\end{tabular}
+\caption{ANOVA table for interactions}
+\end{table}
+
+Based on this ANOVA table for the interaction model below, the only significant variable is TEMP:DEWP, which means their interaction is the most important thing in this model.
+
+Now we take a closer look at this interaction (@fig-6) .
+
+```{r}
+source("https://cipolli.com/students/code/plotResiduals.R")
+
+graph.2<-plotResiduals(interaction.model)
+```
+
+```{r}
+#| fig-width: 7
+#| fig-height: 5
+#| fig-cap: "Figure of diagnostic plots for the interaction linear model where Y is sea level pressure and the predictors are daily temperature, visibility, dew point, wind speed, and maximum wind gust."
+#| label: fig-6
+graph.2
+```
+
+As seen above in @fig-6, the interaction, when graphed produce an almost perfect graphical display, similar to the original model. So, no transformation is needed as the graph is approximately normal.
+
+```{r}
+summary(interaction.model)$r.squared
+```
+
+```{r}
+summary(interaction.model)$adj.r.squared
+
+```
+
+The interaction model has a higher R-squared and adjusted R-squared value in comparison to our first model, indicating that the model explains more of the variability in the response variable, taken into account the interaction of temperature and dew point. A higher adjusted R-squared value suggests that the interaction terms are adding meaningful explanatory power to the model. These higher values overall indicate that the interaction terms are important and improve the model's ability to explain the variability in the response variable, further suggesting that the relationship between predictors and the response variable is more accurately captured when considering the interactions between predictors.
+
+## Model Selection: Full 2-Way Interaction Model
+
+Step wise model selection using AIC (Akaike Information Criterion) and BIC (Bayesian Information Criterion) is a method that starts with a simple intercept model and can potentially reach a full interaction model. During each iteration, predictors are added and removed from the model and changing AIC and BIC values are recorded. The goal is to identify the model with the lowest possible AIC and BIC values.
+
+AIC aims to balance the goodness of fit model with its complexity by penalizing models with more parameters to avoid over fitting. Lower AIC values indicate a better model, making it useful for comparing models with different numbers of parameters.
+
+BIC also balances model fit and complexity but includes a stronger penalty for models with more parameters, especially as the sample size increases. Lower BIC values indicate a better model, with BIC tending to favor simpler models compared to AIC, particularly with larger data sets.
+
+The step wise model selection process begins with the simplest model, which includes only the intercept. Predictors are then added or removed one at a time based on their impact on AIC and BIC values. For each model iteration, the AIC and BIC values are calculated and recorded. The process continues until the model with the lowest AIC and BIC values is identified, indicating the best balance between fit and complexity. By using AIC and BIC stepwise model selection, we systematically find a model that not only firs the data well, but also avoids unnecessary complexity.
+
+### Backward Elimination and AIC
+
+```{r}
+IbAIC <- stepAIC(interaction.model,
+        direction = "backward", 
+        trace = FALSE)
+summary(IbAIC)
+
+```
+
+### Backward Elimination and BIC
+
+```{r}
+IbBIC <- stepAIC(interaction.model, 
+        direction= "backward", 
+        k=log(nrow(gsod.data.clean)), 
+        trace=FALSE)
+summary(IbBIC)
+```
+
+### Forward Selection and AIC
+
+```{r}
+intercept<-lm(SLP~1, data=gsod.data.clean)
+```
+
+```{r}
+IfAIC <- stepAIC(intercept,
+        direction = "forward",
+        scope = list(upper = interaction.model),
+        trace = FALSE)
+
+summary(IfAIC)
+
+```
+
+### Forward Selection and BIC
+
+```{r}
+IfBIC <- stepAIC(intercept,
+        direction = "forward",
+        scope = list(upper = interaction.model),
+        k=log(nrow(gsod.data.clean)),
+        trace = FALSE)
+summary(IfBIC)
+```
+
+### Stepwise Selection and AIC
+
+```{r}
+IsAIC <-stepAIC(intercept,
+        direction = "both",
+        scope = list(upper = interaction.model),
+        trace = FALSE)
+summary(IsAIC)
+```
+
+### Stepwise selection and BIC
+
+```{r}
+IsBIC <- stepAIC(intercept,
+        direction = "both",
+        scope = list(upper = interaction.model),
+        k=log(nrow(gsod.data.clean)),
+        trace = FALSE)
+summary(IsBIC)
+```
+
+## Final Model: Full 2-Way Interaction Model
+
+The table below shows the adjusted r squared for model selection process for the interaction model as it compares to the adjust r squared to the best fit of the original model. As you can tell, the original interaction model has a higher R squared than the best fit of the original model. So, this proves the best model model is the interaction model. However the best model out of the interaction models is also the Step AIC with the higher adjusted R squared of 0.4344. Additionally, the step has the same adjusted r squared as the forward AIC and it has the same 8 predictors: TEMP, WDSP, GUST, DEWP, VISIB, TEMP:DEWP, DEWP:VISIB, TEMP:GUST. However, the step function is better as it uses both the forward and backwards method.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cc}
+  \hline\hline
+ & Adjusted R Squared \\ 
+  \hline
+Backwards AIC & 0.4341 \\ 
+Backwards BIC & 0.4255 \\
+Forwards AIC & 0.4344  \\ 
+Forwards BIC & 0.4255 \\ 
+Step AIC & 0.4344 \\ 
+Step BIC & 0.4255 \\ 
+Original Interaction & 0.428908 \\
+Step AIC for Original Model & 0.375 \\
+   \hline\hline
+\end{tabular}
+\caption{Adjusted R Squared For Interaction Model Selection and the best model of the First Order Model}
+\end{table}
+
+## Our Final Model
+
+```{r}
+metrics<-data.frame(Model=c("1", "interaction"),
+R.squared = c(summary(model.1)$r.squared,
+summary(interaction.model)$r.squared),
+R.adj.squared = c(summary(model.1)$adj.r.squared,
+summary(interaction.model)$adj.r.squared),
+LL=c(logLik(model.1),
+logLik(interaction.model)),
+AIC=c(AIC(model.1), AIC(interaction.model)),
+BIC=c(BIC(model.1), BIC(interaction.model)),
+RMSE=c(sqrt(mean(residuals(model.1)^2)),
+sqrt(mean(residuals(interaction.model)^2))),
+MAE=c(mean(abs(residuals(model.1))),
+mean(abs(residuals(interaction.model)))))
+```
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cccccccc}
+  \hline\hline
+Model & R.squared & R.adj.squared & LL & AIC & BIC & RMSE & MAE \\ 
+  \hline
+Model 1 & 0.3836 & 0.3750 & -1145.3392 & 2304.6783 & 2331.9776 & 5.5788 & 4.3161 \\ 
+  Interaction Model & 0.4524 & 0.4289 & -1123.7126 & 2281.4253 & 2347.7235 & 5.2579 & 4.0582 \\ 
+   \hline\hline
+\end{tabular}
+\caption{Table of model metrics for the 2 main models.}
+\end{table}
+
+Our interaction model is better than the original model with the model metrics: higher R-Squared and Adjusted R-Squared values, higher ll, smaller AIC, smaller RMSE and MAE. However, the interaction model shows a slightly higher BIC value.
+
+## Cross Validation:
+
+To make sure the interaction model is the best model, we are doing cross validation to make sure.
+
+```{r}
+specs <- trainControl(method = "CV",number = 10)
+
+set.seed(16)
+
+model.1 <- train(SLP ~ TEMP + VISIB + DEWP + WDSP + GUST,
+data = gsod.data.clean,
+method = "lm",
+trControl = specs,
+na.action = na.omit)
+
+model.2 <- train(SLP~(TEMP+ VISIB+ DEWP+ WDSP+ GUST)^2,
+data = gsod.data.clean,
+method = "lm",
+trControl = specs,
+na.action = na.omit)
+```
+
+```{r}
+model.1
+```
+
+```{r}
+model.2
+```
+
+Based on this, model 2, the interaction model is better as RMSE and MAE is smaller and R-Squared and Adjusted R-Squared is larger.
+
+Leave out cross validation
+
+```{r}
+specs <- trainControl(method = "LOOCV")
+
+model.1.loocv <- train(SLP ~ TEMP + VISIB + DEWP + WDSP + GUST,
+data = gsod.data.clean,
+method = "lm",
+trControl = specs,
+na.action = na.omit)
+
+model.2.loocv <- train(SLP~(TEMP+ VISIB+ DEWP+ WDSP+ GUST)^2,
+data = gsod.data.clean,
+method = "lm",
+trControl = specs,
+na.action = na.omit)
+```
+
+```{r}
+model.1.loocv
+```
+
+```{r}
+model.2.loocv
+```
+
+Based on this, the interaction model is better as RMSE and MAE is smaller and R squared is larger.
+
+## Final Steps
+
+Since we know that the interaction model is the best model, we are bootstrap it. Bootstrapping allows you to estimate the variability and accuracy of a population parameter. It is used to calculate standard errors, construct confidence intervals, and perform hypothesis testing for various sample statistics.
+
+boot strapping final model (interaction model):
+
+```{r}
+final.model <- lm(SLP ~ TEMP + VISIB + DEWP+WDSP+GUST, data = gsod.data.clean)
+summary(final.model)
+summary(final.model)$adj.r.squared
+```
+
+```{r}
+source("https://cipolli.com/students/code/plotResiduals.R")
+figure7<-plotResiduals(final.model)
+```
+
+```{r, echo=FALSE}
+#| fig-width: 7
+#| fig-height: 5
+#| fig-cap: "Figure of residuals"
+#| label: fig-7
+figure7
+```
+
+```{r}
+R<-5000
+samp.size<-nrow(gsod.data.clean)
+boot.betas<-matrix(0,nrow=R, ncol=16)
+boot.adj.r.squared<-matrix(0, R, ncol=1)
+set.seed(100)
+```
+
+```{r}
+for(i in 1:R){
+  boot.data = gsod.data.clean[sample(1:samp.size, size = samp.size, replace = TRUE), ]
+  boot.model = lm(SLP~(TEMP+ VISIB+ DEWP+ WDSP+ GUST)^2, data = boot.data)
+  boot.betas[i,] = coef(boot.model)
+  boot.adj.r.squared[i,] = summary(boot.model)$adj.r.squared
+}
+```
+
+```{r}
+boot.betas %>% head()
+boot.betas %>% dim()
+boot.adj.r.squared %>% head()
+boot.adj.r.squared %>% dim()
+```
+
+```{r}
+alpha<-0.05
+```
+
+Below is a histogram of temperature after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,2])
+quantile(boot.betas[,2], probs = c(alpha/2, 1-alpha/2))
+
+```
+
+Above is the confidence interval for the predictor temperature.
+
+Below is a histogram of visibility after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,3])
+quantile(boot.betas[,3], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the predictor visibility.
+
+Below is a histogram of dew point after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,4])
+quantile(boot.betas[,4], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the predictor dew point.
+
+Below is a histogram of wind speed after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,5])
+quantile(boot.betas[,5], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the predictor wind speed.
+
+Below is a histogram of maximum wind gust after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,6])
+quantile(boot.betas[,6], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the predictor maximum wind gust.
+
+Below is a histogram of temperature/visibility after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,7])
+quantile(boot.betas[,7], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the effect between temperature/visibility.
+
+Below is a histogram of temperature/dew point after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,8])
+quantile(boot.betas[,8], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the effect between temperature and dew point.
+
+Below is a histogram of temperature/wind speed after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,9])
+quantile(boot.betas[,9], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the effect between temperature and wind speed.
+
+Below is a histogram of temperature/maximum wind gust after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,10])
+quantile(boot.betas[,10], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the effect between temperature and maximum wind gust.
+
+Below is a histogram of visibility/dew point after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,11])
+quantile(boot.betas[,11], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the effect between visibility and dew point.
+
+Below is a histogram of visibility/wind speed after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,12])
+quantile(boot.betas[,12], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the effect between visibility and wind speed.
+
+Below is a histogram of visibility/maximum wind gust after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,13])
+quantile(boot.betas[,13], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the effect between visibility and maximum wind gust.
+
+Below is a histogram of dew point/wind speed after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,14])
+quantile(boot.betas[,14], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the effect between dew point and wind speed.
+
+Below is a histogram of dew point/maximum wind gust after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,15])
+quantile(boot.betas[,15], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the effect between dew point and maximum wind gust.
+
+Below is a histogram of wind speed/maximum wind gust after bootstrapping the interaction model.
+
+```{r}
+hist(boot.betas[,16])
+quantile(boot.betas[,16], probs = c(alpha/2, 1-alpha/2))
+```
+
+Above is the confidence interval for the effect between wind speed and maximum wind gust.
+
+Below is a histogram of Adjusted R-Squared after bootstrapping the interaction model.
+
+```{r}
+hist(boot.adj.r.squared)
+quantile(boot.adj.r.squared[,1], probs = c(alpha/2, 1-alpha/2))
+```
+
+```{r}
+# Parametric confidence intervals
+confint(final.model)
+
+```
+
+\newpage
+
+# Conclusion
+
+Our project analyzed data collected from the USAF Climatology Center to answer the research questions: does one factor correlated with sea level pressure more than another and how does sea level pressure compare to our predictor variables temperature, visibility, dew point, wind speed, snow depth and season? Our goal was to create a multiple linear regression model predictive of sea level pressure.
+
+Based on the analysis and findings presented in this paper, we can conclude that our study successfully identified key predictors of sea level pressure in Denver, Colorado, using multiple linear regression models. By incorporating variables such as temperature, visibility, dew point, wind speed, and maximum wind gust, we developed a model that explains a significant portion of the variability in sea level pressure.
+
+Our exploratory data analysis revealed that temperature had the strongest correlation with sea level pressure, while visibility had the weakest. The initial model met all necessary conditions for use, and further transformations were deemed unnecessary. The interaction model, which included interaction terms between predictors, demonstrated improved performance with higher R-Squared and Adjusted R-Squared values compared to the original model.
+
+Stepwise model selection using AIC and BIC helped refine our model by identifying the best subset of predictors, balancing model fit and complexity. The final interaction model, validated through cross-validation techniques, proved to be the most effective in predicting sea level pressure, with lower RMSE and MAE values and higher R-Squared values.
+
+In conclusion, our study highlights the importance of considering multiple predictors and their interactions when modeling sea level pressure. The findings provide valuable insights into the factors influencing sea level pressure and can inform future research and practical applications in climatology and environmental science.
+
